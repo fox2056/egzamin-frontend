@@ -126,7 +126,7 @@ Aplikacja domyślnie łączy się z backendem pod adresem `http://localhost:8080
 
 ## 👥 Autorzy
 
-- Twoje imię i nazwisko
+- Oleksii Sliepov
 
 ## 📄 Licencja
 
