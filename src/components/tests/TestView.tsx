@@ -1,11 +1,11 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { getTest, getTestQuestions, submitTest } from '@/lib/api';
+import { getTestQuestions, submitTest } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { TestQuestion, TestQuestionsResponse, TestAnswer, TestResult } from '@/lib/types';
+import { TestQuestionsResponse, TestAnswer, TestResult } from '@/lib/types';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import TestResults from './TestResults';

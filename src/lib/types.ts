@@ -108,4 +108,13 @@ export interface DisciplineMergeResponse {
   sourceId: number;
   targetId: number;
   message: string;
+}
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  picture?: string;
+  avatar?: string;
+  authenticated: boolean;
 } 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../../lib/utils';
-import { Menu } from 'lucide-react';
+import { Menu, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -11,6 +11,16 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { Footer } from './Footer';
+import { useAuth } from '@/contexts/AuthContext';
+import { getUserAvatar } from '@/lib/api';
+import { useQuery } from '@tanstack/react-query';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -19,6 +29,13 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const [isOpen, setIsOpen] = React.useState(false);
+  const { user, logout } = useAuth();
+
+  const { data: avatarUrl } = useQuery({
+    queryKey: ['avatar', user?.id],
+    queryFn: () => user?.id ? getUserAvatar(user.id) : null,
+    enabled: !!user?.id,
+  });
 
   const navigation = [
     { href: '/', label: 'Strona główna' },
@@ -27,6 +44,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { href: '/questions/import', label: 'Import Pytań' },
     { href: '/tests/new', label: 'Rozpocznij Test' },
   ];
+
+  const handleLogout = () => {
+    logout();
+  };
 
   const NavLinks = () => (
     <>
@@ -72,6 +93,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </SheetDescription>
                 <nav className="flex flex-col space-y-4 mt-6">
                   <NavLinks />
+                  <Button
+                    variant="ghost"
+                    className="justify-start"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Wyloguj się
+                  </Button>
                 </nav>
               </SheetContent>
             </Sheet>
@@ -80,6 +109,36 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <nav className="hidden lg:flex items-center space-x-6 text-sm font-medium">
               <NavLinks />
             </nav>
+
+            {/* User Menu */}
+            <div className="hidden lg:flex items-center space-x-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage 
+                        src={avatarUrl || user?.avatar} 
+                        alt={user?.name} 
+                        className="object-cover"
+                      />
+                      <AvatarFallback>{user?.name?.[0]?.toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="font-medium">{user?.name}</p>
+                      <p className="text-xs text-muted-foreground">{user?.email}</p>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Wyloguj się</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
       </header>

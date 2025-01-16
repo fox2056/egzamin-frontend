@@ -25,10 +25,9 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useAuth } from '@/contexts/AuthContext';
 
 const testSchema = z.object({
-  studentName: z.string().min(1, 'Imię i nazwisko jest wymagane'),
-  studentEmail: z.string().email('Nieprawidłowy adres email'),
   numberOfQuestions: z.number().min(1, 'Minimalna liczba pytań to 1').max(50, 'Maksymalna liczba pytań to 50'),
   includedDisciplineIds: z.array(z.number()).min(1, 'Wybierz przynajmniej jedną dyscyplinę'),
   excludedDisciplineIds: z.array(z.number()),
@@ -39,13 +38,12 @@ type TestFormData = z.infer<typeof testSchema>;
 const TestStart: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const form = useForm<TestFormData>({
     resolver: zodResolver(testSchema),
     defaultValues: {
-      studentName: '',
-      studentEmail: '',
       numberOfQuestions: 10,
       includedDisciplineIds: [],
       excludedDisciplineIds: [],
@@ -66,7 +64,7 @@ const TestStart: React.FC = () => {
   }, [disciplines, form]);
 
   const onSubmit = async (data: TestFormData) => {
-    if (isSubmitting) return;
+    if (isSubmitting || !user) return;
     if (data.includedDisciplineIds.length === 0) {
       toast({
         title: 'Błąd',
@@ -78,7 +76,11 @@ const TestStart: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const test = await startTest(data);
+      const test = await startTest({
+        ...data,
+        studentName: user.name || '',
+        studentEmail: user.email || '',
+      });
       navigate(`/tests/${test.id}`);
     } catch (error) {
       toast({
@@ -101,47 +103,9 @@ const TestStart: React.FC = () => {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Dane studenta</CardTitle>
-              <CardDescription>
-                Wprowadź swoje dane, aby rozpocząć test
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <FormField
-                control={form.control}
-                name="studentName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Imię i nazwisko</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="studentEmail"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input type="email" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
               <CardTitle>Ustawienia testu</CardTitle>
               <CardDescription>
-                Wybierz dyscypliny i liczbę pytań
+                Wybierz liczbę pytań i dyscypliny
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
