@@ -1,0 +1,88 @@
+name: CI/CD for Egzaminator Frontend
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+        env:
+          EGZAMINATOR_BASE_BACKEND_URL: ${{ secrets.EGZAMINATOR_BASE_BACKEND_URL }}
+
+      - name: Debug build output
+        run: ls -l dist/
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: egzaminator-frontend
+          path: dist/
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: egzaminator-frontend
+          path: dist
+
+      - name: Debug downloaded artifact
+        run: ls -l dist/
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+      - name: Cleanup old deployment
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} <<EOF
+          sudo rm -rf /opt/tomcat/webapps/egzaminator/*
+          sudo rm -f /opt/tomcat/webapps/egzaminator.war
+          EOF
+
+      - name: Deploy to Tomcat
+        uses: appleboy/scp-action@v0.1.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: "22"
+          source: "dist/*"
+          target: "/opt/tomcat/webapps/egzaminator"
+          strip_components: 1
+
+      - name: Set permissions and restart Tomcat
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} <<EOF
+          sudo chown -R tomcat:tomcat /opt/tomcat/webapps/egzaminator
+          sudo chmod -R 755 /opt/tomcat/webapps/egzaminator
+          sudo systemctl restart tomcat
+          EOF

@@ -48,6 +48,20 @@ export const deleteDiscipline = (id: number) =>
   }).then(handleResponse);
 
 // Pytania
+export const createQuestion = (data: ApiQuestionData) => 
+  fetch(`${API_URL}/questions`, {
+    ...defaultOptions,
+    method: 'POST',
+    body: JSON.stringify(data)
+  }).then(handleResponse);
+
+export const updateQuestion = (id: number, data: ApiQuestionData) =>
+  fetch(`${API_URL}/questions/${id}`, {
+    ...defaultOptions,
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }).then(handleResponse);
+
 export const getQuestion = (id: number) => 
   fetch(`${API_URL}/questions/${id}`, defaultOptions).then(handleResponse);
 
@@ -164,4 +178,12 @@ export const loginWithFacebook = () => {
 
 export const logout = () => {
   window.location.href = `${BASE_URL}/api/auth/logout`;
-}; 
+};
+
+interface ApiQuestionData {
+  content: string;
+  type: 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE';
+  disciplineId: number;
+  correctAnswers: string[];
+  incorrectAnswers: string[];
+} 

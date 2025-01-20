@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { getQuestion, getDisciplines } from '@/lib/api';
+import { getQuestion, getDisciplines, createQuestion, updateQuestion } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -101,16 +101,27 @@ const QuestionForm: React.FC = () => {
 
   const onSubmit = async (data: QuestionFormData) => {
     try {
-      // TODO: Implement API call
+      const questionData = {
+        ...data,
+        disciplineId: parseInt(data.disciplineId)
+      };
+
+      if (id) {
+        await updateQuestion(parseInt(id), questionData);
+      } else {
+        await createQuestion(questionData);
+      }
+
       toast({
         title: 'Sukces',
         description: id ? 'Pytanie zostało zaktualizowane' : 'Pytanie zostało dodane',
       });
       navigate('/questions');
-    } catch (error) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Nie udało się zapisać pytania';
       toast({
         title: 'Błąd',
-        description: 'Nie udało się zapisać pytania',
+        description: errorMessage,
         variant: 'destructive',
       });
     }
