@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from './components/ui/toaster';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -17,14 +17,7 @@ const TestStart = React.lazy(() => import('./components/tests/TestStart'));
 const TestView = React.lazy(() => import('./components/tests/TestView'));
 const NotFoundPage = React.lazy(() => import('./components/error/NotFoundPage'));
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      retry: 1,
-    },
-  },
-});
+const queryClient = new QueryClient();
 
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center h-screen">
@@ -46,11 +39,11 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
-function App() {
+const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Router>
+        <BrowserRouter basename={import.meta.env.EGZAMINATOR_BASE_PATH}>
           <React.Suspense fallback={<LoadingSpinner />}>
             <Routes>
               <Route path="/login" element={<LoginPage />} />
@@ -79,11 +72,11 @@ function App() {
               />
             </Routes>
           </React.Suspense>
-        </Router>
+        </BrowserRouter>
         <Toaster />
       </AuthProvider>
     </QueryClientProvider>
   );
-}
+};
 
 export default App;

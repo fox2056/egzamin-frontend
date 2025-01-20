@@ -29,6 +29,35 @@ jobs:
         run: npm run build
         env:
           EGZAMINATOR_BASE_BACKEND_URL: ${{ secrets.EGZAMINATOR_BASE_BACKEND_URL }}
+          EGZAMINATOR_BASE_PATH: ${{ secrets.EGZAMINATOR_BASE_PATH }}
+
+      - name: Create WEB-INF directory and web.xml
+        run: |
+          mkdir -p dist/WEB-INF
+          cat > dist/WEB-INF/web.xml << 'EOL'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee 
+                   http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+                   version="4.0">
+              <error-page>
+                  <error-code>404</error-code>
+                  <location>/index.html</location>
+              </error-page>
+          </web-app>
+          EOL
+
+      - name: Create .htaccess file
+        run: |
+          cat > dist/.htaccess << EOL
+          RewriteEngine On
+          RewriteBase ${{ secrets.EGZAMINATOR_BASE_PATH }}/
+          RewriteRule ^index\.html$ - [L]
+          RewriteCond %{REQUEST_FILENAME} !-f
+          RewriteCond %{REQUEST_FILENAME} !-d
+          RewriteRule . ${{ secrets.EGZAMINATOR_BASE_PATH }}/index.html [L]
+          EOL
 
       - name: Debug build output
         run: ls -l dist/
