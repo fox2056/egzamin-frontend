@@ -7,7 +7,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   return {
     plugins: [react()],
-    base: env.EGZAMINATOR_BASE_PATH || '/egzaminator/',
+    base: env.VITE_EGZAMINATOR_BASE_PATH || '/egzaminator/',
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         '/api': {
-          target: 'http://localhost:8080',
+          target: env.VITE_EGZAMINATOR_BASE_BACKEND_URL || 'http://localhost:8080',
           changeOrigin: true,
           secure: false,
         }

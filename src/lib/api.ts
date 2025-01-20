@@ -1,6 +1,6 @@
 import { TestAnswer, TestStartRequest } from './types';
 
-const BASE_URL = import.meta.env.EGZAMINATOR_BASE_BACKEND_URL || 'http://localhost:8080';
+const BASE_URL = import.meta.env.VITE_EGZAMINATOR_BASE_BACKEND_URL || 'http://localhost:8080';
 const API_URL = `${BASE_URL}/api`;
 
 // Funkcje pomocnicze

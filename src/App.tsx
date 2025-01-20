@@ -43,7 +43,7 @@ const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <BrowserRouter basename={import.meta.env.EGZAMINATOR_BASE_PATH}>
+        <BrowserRouter basename={import.meta.env.VITE_EGZAMINATOR_BASE_PATH}>
           <React.Suspense fallback={<LoadingSpinner />}>
             <Routes>
               <Route path="/login" element={<LoginPage />} />

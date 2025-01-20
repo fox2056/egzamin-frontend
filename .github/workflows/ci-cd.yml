@@ -28,8 +28,8 @@ jobs:
       - name: Build application
         run: npm run build
         env:
-          EGZAMINATOR_BASE_BACKEND_URL: ${{ secrets.EGZAMINATOR_BASE_BACKEND_URL }}
-          EGZAMINATOR_BASE_PATH: ${{ secrets.EGZAMINATOR_BASE_PATH }}
+          VITE_EGZAMINATOR_BASE_BACKEND_URL: ${{ secrets.EGZAMINATOR_BASE_BACKEND_URL }}
+          VITE_EGZAMINATOR_BASE_PATH: ${{ secrets.EGZAMINATOR_BASE_PATH }}
 
       - name: Create WEB-INF directory and web.xml
         run: |
