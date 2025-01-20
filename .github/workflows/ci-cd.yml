@@ -90,11 +90,14 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
 
-      - name: Cleanup old deployment
+      - name: Prepare deployment directory
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} <<EOF
-          sudo rm -rf /opt/tomcat/webapps/egzaminator/*
-          sudo rm -f /opt/tomcat/webapps/egzaminator.war
+            sudo systemctl stop tomcat
+            sudo rm -rf /opt/tomcat/webapps/egzaminator
+            sudo mkdir -p /opt/tomcat/webapps/egzaminator
+            sudo chown -R ${{ secrets.SERVER_USER }}:${{ secrets.SERVER_USER }} /opt/tomcat/webapps/egzaminator
+            sudo chmod -R 775 /opt/tomcat/webapps/egzaminator
           EOF
 
       - name: Deploy to Tomcat
@@ -111,7 +114,7 @@ jobs:
       - name: Set permissions and restart Tomcat
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} <<EOF
-          sudo chown -R tomcat:tomcat /opt/tomcat/webapps/egzaminator
-          sudo chmod -R 755 /opt/tomcat/webapps/egzaminator
-          sudo systemctl restart tomcat
+            sudo chown -R tomcat:tomcat /opt/tomcat/webapps/egzaminator
+            sudo chmod -R 755 /opt/tomcat/webapps/egzaminator
+            sudo systemctl start tomcat
           EOF
